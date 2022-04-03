@@ -1,0 +1,20 @@
+services:
+
+  scribe-mongodb:
+    extends:
+      file: ./agatha-kt-scribe-mongodb/compose.yaml
+      service: scribe-mongodb
+
+  scribe-ktor:
+    depends_on:
+      - scribe-mongodb
+    extends:
+      file: ./agatha-kt-scribe-ktor/compose.yaml
+      service: scribe-ktor
+
+  scribe-mongodb-express:
+    depends_on:
+      - scribe-mongodb
+    extends:
+      file: ./agatha-kt-scribe-mongodb/compose.yaml
+      service: scribe-mongodb-express
