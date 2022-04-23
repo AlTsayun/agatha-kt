@@ -1,0 +1,38 @@
+###
+OPTIONS https://gorest.co.in/public/v2/users/100/posts
+Accept: application/json
+Access-Control-Request-Method: GET
+Access-Control-Request-Headers: origin
+Origin: https://foo.bar.org
+
+###
+###
+GET http://localhost:8080/pluginOutput/1
+Accept: application/json
+
+###
+###
+GET http://localhost:8080/script/2
+Accept: application/json
+
+###
+###
+POST http://localhost:8081
+Content-Type: application/json
+
+{
+  "id": 1,
+  "t": 1649009674,
+  "data": {
+    "l": 100
+  }
+}
+
+###
+###
+GET https://gorest.co.in/public/v2/users/100/posts
+###
+
+
+
+

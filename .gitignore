@@ -37,4 +37,5 @@ out/
 .vscode/
 
 
-/agatha-kt-scribe/agatha-kt-scribe-mongodb/db_data
+/scribe/mongodb/db_data
+/manager/postgres/db_data
