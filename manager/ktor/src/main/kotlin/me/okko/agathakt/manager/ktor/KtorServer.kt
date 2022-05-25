@@ -1,9 +1,11 @@
 package me.okko.agathakt.manager.ktor
 
 import io.ktor.application.*
+import io.ktor.auth.*
 import io.ktor.network.tls.certificates.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
+import me.okko.agathakt.manager.ktor.plugins.configureAuthentication
 import me.okko.agathakt.manager.ktor.plugins.configureContentNegotiation
 import me.okko.agathakt.manager.ktor.plugins.configureCors
 import me.okko.agathakt.manager.ktor.plugins.configureKoin
@@ -20,6 +22,7 @@ fun Application.module() {
     configureCors()
     configureKoin()
     configureRouting()
+//    configureAuthentication()
 }
 
 fun configureEnvironment(): ApplicationEngineEnvironment {

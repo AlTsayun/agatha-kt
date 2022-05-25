@@ -25,6 +25,7 @@ object MeduimTable: IntIdTable("meduim") {
 
 object PluginTable: IntIdTable("plugin") {
     val name = varchar("name", 64)
+    val externalLink = varchar("external_link", 1024)
     val isActive = bool("is_active")
     val createdDate = date("created_date")
 }
@@ -32,6 +33,7 @@ object PluginTable: IntIdTable("plugin") {
 object MeduimToPluginTable: Table("meduim_to_plugin") {
     val meduim = reference("meduim_id", MeduimTable.id)
     val plugin = reference("plugin_id", PluginTable.id)
+    val isDashboardVisible = bool("is_dashboard_visible")
     override val primaryKey = PrimaryKey(meduim, plugin, name = "PK_meduim_to_plugin")
 }
 
@@ -43,6 +45,7 @@ object MeduimToSensorTable: Table("meduim_to_sensor") {
 
 object SensorTypeTable: IntIdTable("sensor_type") {
     val name = varchar("name", 64)
+    val externalLink = varchar("external_link", 1024)
     val isActive = bool("is_active")
     val createdDate = date("created_date")
 }

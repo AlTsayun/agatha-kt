@@ -1,6 +1,7 @@
 package me.okko.agathakt.manager.service
 
 import me.okko.agathakt.manager.repository.Meduim
+import me.okko.agathakt.manager.repository.Sensor
 import me.okko.agathakt.manager.repository.SensorType
 import org.jetbrains.exposed.sql.mapLazy
 import java.io.File
@@ -27,6 +28,8 @@ class ScriptComposerImpl(private val apiProvider: SensorDataApiProvider) : Scrip
             TODO()
         }
 
+        (Meduim.findById(mediumId)?: throw RuntimeException()).sensors
+
         val file = createTempFile()
         ScriptComposerImpl::class.java.classLoader.getResourceAsStream("script_template.js").use {
             Files.copy(it, file, StandardCopyOption.REPLACE_EXISTING)
@@ -34,7 +37,7 @@ class ScriptComposerImpl(private val apiProvider: SensorDataApiProvider) : Scrip
         return file
     }
 
-    private fun get(sensorType: SensorType) : String {
+    private fun get(sensor: Sensor) : String {
         TODO()
     }
 }

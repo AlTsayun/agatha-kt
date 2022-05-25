@@ -1,4 +1,4 @@
 
-(function(window, document, millisecondTime, sendData) {
+(function(window, document, millisecondTime, send) {
     /*{sensorCode}*/
-})(w,d,l,function(d){ send(/*{id}*/, d) });
+})(w,d,l,function(d){ send(/*{url}*/, /*{id}*/, d) });

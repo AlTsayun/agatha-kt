@@ -18,6 +18,7 @@ dependencies {
 
     implementation("io.ktor:ktor-server-core:${Versions.ktor}")
     implementation("io.ktor:ktor-server-netty:${Versions.ktor}")
+    implementation("io.ktor:ktor-auth:${Versions.ktor}")
     implementation("io.ktor:ktor-network-tls-certificates:${Versions.ktor}")
 
     implementation("io.ktor:ktor-client-core:${Versions.ktor}")
@@ -39,6 +40,7 @@ dependencies {
     implementation("org.postgresql:postgresql:${Versions.postgres}")
 
     implementation("ch.qos.logback:logback-classic:${Versions.logback}")
+
 //    testImplementation("io.ktor:ktor-server-tests:${Versions.ktor}")
 //    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:${Versions.kotlin}")
 }

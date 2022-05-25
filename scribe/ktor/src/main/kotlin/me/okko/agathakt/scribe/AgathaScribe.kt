@@ -24,7 +24,6 @@ val client = KMongo.createClient("mongodb://root:example@localhost:27017").corou
 val database = client.getDatabase("census")
 //val saltSupplier = getRandomStringSupplier(3)
 
-
 fun main() {
     embeddedServer(Netty, port = 8081, host = "localhost") {
         install(ContentNegotiation) {
@@ -43,19 +42,20 @@ fun main() {
         }
         routing {
             get("/{id}") {
-                ObjectId()
                 val id = call.parameters["id"]
                 if (id != null) {
-                    val collection = database.getCollection<MongoSensorRecord>("p_$id")
+                    val collection = database.getCollection<MongoSensorRecord>("s_$id")
                     call.respond(collection.find().toList().map { it.asData() })
                 } else {
                     call.respond(HttpStatusCode.NotFound)
                 }
             }
+
             post("/") {
                 val sensorRespond = call.receive<SensorRespond>()
-                val collection = database.getCollection<MongoSensorRecord>("p_${sensorRespond.id}")
-                collection.insertOne(sensorRespond.asMongo())
+                val collection = database.getCollection<MongoSensorRecord>("s_${sensorRespond.id}")
+                val hashCode = call.request.origin.remoteHost.hashCode() and 0x00_ff_ff_ff
+                collection.insertOne(sensorRespond.asMongo(hashCode))
                 call.respond(HttpStatusCode.NoContent)
             }
         }

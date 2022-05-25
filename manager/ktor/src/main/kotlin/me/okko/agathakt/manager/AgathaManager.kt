@@ -6,6 +6,6 @@ import me.okko.agathakt.manager.repository.insertDatabaseEntities
 
 fun main() {
     initializeDatabaseTables()
-    insertDatabaseEntities()
+//    insertDatabaseEntities()
     startKtorServer()
 }

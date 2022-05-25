@@ -10,8 +10,8 @@ function run(w,d,l) {
     /*{sensorsCode}*/
 }
 
-function send(pluginId, data) {
-    const url = "http://localhost:8081";
+function send(url, pluginId, data) {
+    // const url = "http://localhost:8081";
     const xhr = new XMLHttpRequest();
     xhr.open("POST", url, true);
     xhr.setRequestHeader("Content-Type", "application/json");
