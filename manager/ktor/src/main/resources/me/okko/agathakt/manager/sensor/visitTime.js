@@ -1,3 +1,3 @@
 $(window).unload(function () {
-    send({l: Date.now() - millisecondTime})
+    send({t: Math.floor((Date.now() - millisecondTime) / 1000)})
 });

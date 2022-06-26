@@ -1,5 +1,9 @@
 package me.okko.agathakt.manager.repository
 
+import me.okko.agathakt.manager.repository.PluginTypeTable.default
+import me.okko.agathakt.manager.repository.PluginTypeTable.nullable
+import me.okko.agathakt.manager.repository.SensorTable.default
+import me.okko.agathakt.manager.repository.SensorTable.nullable
 import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
@@ -7,60 +11,69 @@ import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.javatime.date
 import org.jetbrains.exposed.sql.transactions.transaction
 
-object ActorTable: IntIdTable("actor") {
+object ImageTable : IntIdTable("image") {
+    val link = varchar("link", 1024)
+}
+
+object ActorTable : IntIdTable("actor") {
     val firstName = varchar("first_name", 64)
     val lastName = varchar("last_name", 64)
     val email = varchar("email", 320)
     val passwordHash = varchar("password_hash", 60)
+    val avatar = reference("avatar_image_id", ImageTable.id).nullable().default(null)
+
     val isActive = bool("is_active")
     val createdDate = date("created_date")
 }
 
-object MeduimTable: IntIdTable("meduim") {
+object MediumTable : IntIdTable("medium") {
     val actor = reference("actor_id", ActorTable.id)
     val name = varchar("name", 64)
-    val isActive = bool("is_active")
-    val createdDate = date("created_date")
-}
-
-object PluginTable: IntIdTable("plugin") {
-    val name = varchar("name", 64)
-    val externalLink = varchar("external_link", 1024)
-    val isActive = bool("is_active")
-    val createdDate = date("created_date")
-}
-
-object MeduimToPluginTable: Table("meduim_to_plugin") {
-    val meduim = reference("meduim_id", MeduimTable.id)
-    val plugin = reference("plugin_id", PluginTable.id)
-    val isDashboardVisible = bool("is_dashboard_visible")
-    override val primaryKey = PrimaryKey(meduim, plugin, name = "PK_meduim_to_plugin")
-}
-
-object MeduimToSensorTable: Table("meduim_to_sensor") {
-    val meduim = reference("meduim_id", MeduimTable.id)
-    val sensor = reference("sensor_id", SensorTable.id)
-    override val primaryKey = PrimaryKey(meduim, sensor, name = "PK_meduim_to_sensor")
-}
-
-object SensorTypeTable: IntIdTable("sensor_type") {
-    val name = varchar("name", 64)
-    val externalLink = varchar("external_link", 1024)
-    val isActive = bool("is_active")
-    val createdDate = date("created_date")
-}
-
-object SensorTable: IntIdTable("sensor") {
-    val type = reference("sensor_type_id", SensorTypeTable.id)
+    val description = varchar("description", 64).nullable().default(null)
     val url = varchar("url", 1024)
     val isActive = bool("is_active")
     val createdDate = date("created_date")
 }
 
-object PluginToSensorTypeTable: Table("plugin_to_sensor_type") {
-    val plugin = reference("plugin_id", PluginTable.id)
+object PluginTypeTable : IntIdTable("plugin") {
+    val type = varchar("type", 64)
+    val name = varchar("name", 64)
+    val description = varchar("description", 1024)
+    val externalLink = varchar("external_link", 1024).nullable().default(null)
+    val image = reference("image_id", ImageTable.id).nullable()
+    val isActive = bool("is_active")
+    val createdDate = date("created_date")
+}
+
+object PluginTable : IntIdTable("medium_to_plugin") {
+    val type = reference("plugin_type_id", PluginTypeTable.id).uniqueIndex()
+    val medium = reference("medium_id", MediumTable.id)
+    val isDashboardVisible = bool("is_dashboard_visible").default(true)
+    val isActive = bool("is_active")
+    val createdDate = date("created_date")
+}
+
+object SensorTypeTable : IntIdTable("sensor_type") {
+    val name = varchar("name", 64)
+    val description = varchar("description", 1024)
+    val externalLink = varchar("external_link", 1024).nullable().default(null)
+    val image = reference("image_id", ImageTable.id).nullable().default(null)
+    val isActive = bool("is_active")
+    val createdDate = date("created_date")
+}
+
+object SensorTable : IntIdTable("sensor") {
+    val type = reference("sensor_type_id", SensorTypeTable.id)
+    val medium = reference("medium_id", MediumTable.id)
+    val url = varchar("url", 1024)
+    val isActive = bool("is_active")
+    val createdDate = date("created_date")
+}
+
+object PluginTypeToSensorTypeTable : Table("plugin_type_to_sensor_type") {
+    val pluginType = reference("plugin_type_id", PluginTypeTable.id)
     val sensorType = reference("sensor_type_id", SensorTypeTable.id)
-    override val primaryKey = PrimaryKey(plugin, sensorType, name = "PK_plugin_to_sensor_type")
+    override val primaryKey = PrimaryKey(pluginType, sensorType, name = "PK_plugin_type_to_sensor_type")
 }
 
 fun initializeDatabaseTables() {
@@ -72,14 +85,14 @@ fun initializeDatabaseTables() {
 
     transaction {
         SchemaUtils.createMissingTablesAndColumns(
+            ImageTable,
             ActorTable,
-            MeduimTable,
-            PluginTable,
-            MeduimToPluginTable,
-            MeduimToSensorTable,
+            MediumTable,
+            PluginTypeTable,
             SensorTypeTable,
+            PluginTable,
             SensorTable,
-            PluginToSensorTypeTable
+            PluginTypeToSensorTypeTable
         )
     }
 

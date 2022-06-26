@@ -2,6 +2,7 @@ package me.okko.agathakt.manager.ktor.plugins
 
 import io.ktor.application.*
 import io.ktor.auth.*
+
 fun Application.configureAuthentication() {
     install(Authentication) {
         basic("auth-basic") {

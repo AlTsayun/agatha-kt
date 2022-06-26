@@ -4,14 +4,7 @@ import io.ktor.application.*
 import io.ktor.response.*
 import io.ktor.routing.*
 import me.okko.agathakt.manager.plugin.PluginFactory
-import me.okko.agathakt.manager.plugin.model.ChartOutput
-import me.okko.agathakt.manager.plugin.model.chart.Chart
-import me.okko.agathakt.manager.plugin.model.chart.ChartData
-import me.okko.agathakt.manager.plugin.model.chart.ChartOutput
-import me.okko.agathakt.manager.plugin.model.chart.ChartType
-import me.okko.agathakt.manager.plugin.model.chart.Dataset
-import me.okko.agathakt.manager.plugin.model.chart.Model
-import me.okko.agathakt.manager.plugin.model.chart.PieDataset
+import me.okko.agathakt.manager.repository.Medium
 import me.okko.agathakt.manager.service.ActorProvider
 import me.okko.agathakt.manager.service.MediumProvider
 import me.okko.agathakt.manager.service.PluginProvider
@@ -19,6 +12,7 @@ import me.okko.agathakt.manager.service.ScriptComposer
 import me.okko.agathakt.manager.service.SensorDataLoader
 import me.okko.agathakt.manager.service.SensorProvider
 import me.okko.agathakt.manager.service.SensorTypeProvider
+import org.jetbrains.exposed.sql.transactions.transaction
 import org.koin.ktor.ext.inject
 import kotlin.io.path.exists
 
@@ -33,106 +27,67 @@ fun Application.configureRouting() {
     val mediumProvider: MediumProvider by inject()
 
     routing {
-        get("/meduimOutput/{meduimId}") {
-            restErrors {
-                val meduimId = parseIntParam("meduimId")
-
-                val sensorTypeIdToData =
-                    sensorDataLoader.loadSensorDataForMeduimByIdOrNull(meduimId) ?: throw IdNotFoundException(
-                        "meduim",
-                        meduimId
-                    )
-
-                val processedValue = pluginFactory.getAllForMeduimById(1)
-                    .map {
-                        it.computeFromSensorData(sensorTypeIdToData)
-                    }
-                call.respond(processedValue)
-            }
-        }
-
-        get("/mediums") {
-            call.respond(Model(11))
-        }
 
         route("/mediums") {
-//            get {
-////                restErrors {
-//                    // TODO: get actorId from authorization
-////                    val actorId = 0
-//                    call.respond(
-////                        mediumProvider.getAllByActorIdOrNull(actorId) ?: TODO("wtf you logged in as non-existent actor")
-//                        Model(11)
-//                    )
-////                }
-//            }
+            get {
+                call.respond(mediumProvider.getAllByActorIdOrNull(1)?: throw RuntimeException())
+            }
 
-            post("/") {
+            post {
                 TODO("create new meduim")
             }
 
             route("/{mediumId}") {
                 route("/plugins") {
-                    get("/") {
-                        restGetByIntId("mediumId", "medium") { id ->
-                            pluginProvider.getAllByMediumIdOrNull(id)
+                    get {
+                        restGetByIntId("mediumId", "medium") { mediumId ->
+                            pluginProvider.getAllByMediumIdOrNull(mediumId)
                         }
                     }
-                    post("/") {
+                    post {
                         TODO("add new plugin to medium")
                     }
-                    get("/{pluginId}/output") {
-                        // output contains chart data
-
+                    get("/output/from/{from}/to/{to}") {
                         restErrors {
-                            val meduimId = parseIntParam("meduimId")
+                            val mediumId = parseIntParam("mediumId")
+                            val period = parseIntParam("from")..parseIntParam("to")
 
-                            val sensorTypeIdToData = sensorDataLoader.loadSensorDataForMeduimByIdOrNull(meduimId)
-                                ?: throw IdNotFoundException(
-                                    "meduim",
-                                    meduimId
-                                )
+                            lateinit var medium: Medium
+                            lateinit var sensorIdToUrl: Map<Int, String>
+                            lateinit var pluginIds: List<Int>
 
-                            val pluginId = parseIntParam("pluginId")
+                            transaction {
+                                medium = (Medium.findById(mediumId)
+                                    ?: throw IdNotFoundException(
+                                        "medium",
+                                        mediumId
+                                    ))
 
-
-                            val processedValue = pluginFactory.getAllForMeduimById(1)
-                                .map {
-                                    it.computeFromSensorData(sensorTypeIdToData)
+                                sensorIdToUrl = medium.sensors.associate {
+                                    it.type.id.value to it.url
                                 }
-                            call.respond(processedValue)
-                        }
+                                pluginIds = medium.plugins.map { it.id.value }
+                            }
+                            val sensorTypeIdToData = sensorDataLoader.loadSensorData(sensorIdToUrl, period)
 
-                        call.respond(
-                            ChartOutput(
-                                "name",
-                                Chart(
-                                    ChartType.pie,
-                                    ChartData(
-                                        listOf("Red", "Blue", "Yellow"),
-                                        listOf(
-                                            PieDataset(
-                                                listOf(300, 50, 100),
-                                                listOf(
-                                                    "rgb(255, 99, 132)",
-                                                    "rgb(54, 162, 235)",
-                                                    "rgb(255, 205, 86)"
-                                                )
-                                            )
+                            call.respond(
+                                pluginIds.map {
+                                    val plugin = pluginFactory.getByIdOrNull(it)
+                                        ?: throw IdNotFoundException(
+                                            "plugin",
+                                            it
                                         )
-                                    )
-                                )
+                                    plugin.compute(sensorTypeIdToData, period)
+                                }
                             )
-                        )
-
-//                        TODO("get specific plugin output for meduim")
+                        }
                     }
                 }
 
                 route("/sensors") {
                     get("/") {
-                        restGetByIntId("mediumId", "medium") { id ->
-                            sensorProvider.getAllByMediumIdOrNull(id)
+                        restGetByIntId("mediumId", "medium") { mediumId ->
+                            sensorProvider.getAllByMediumIdOrNull(mediumId)
                         }
                     }
                     post("/") {
@@ -141,17 +96,16 @@ fun Application.configureRouting() {
                 }
 
                 get("/sensorTypes") {
-                    restGetByIntId("mediumId", "medium") { id ->
-                        sensorTypeProvider.getAllByMediumIdOrNull(id)
+                    restGetByIntId("mediumId", "medium") { mediumId ->
+                        sensorTypeProvider.getAllByMediumIdOrNull(mediumId)
                     }
                 }
 
                 get("/script") {
-                    restErrors {
-                        val meduimId = parseIntParam("mediumId")
+                    restGetByIntId("mediumId", "medium") { mediumId ->
                         // construct reference to file
                         // ideally this would use a different filename
-                        val file = scriptComposer.get(meduimId)
+                        val file = scriptComposer.getByMedium(mediumId)
                         if (!file.exists()) {
                             throw NotFoundException();
                         }

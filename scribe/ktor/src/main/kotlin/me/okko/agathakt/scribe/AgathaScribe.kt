@@ -17,6 +17,7 @@ import org.bson.types.ObjectId
 import org.litote.kmongo.coroutine.coroutine
 import org.litote.kmongo.reactivestreams.KMongo
 import java.security.SecureRandom
+import java.util.*
 
 import org.bson.json.JsonObject as MongoJsonObject
 
@@ -43,12 +44,17 @@ fun main() {
         routing {
             get("/{id}") {
                 val id = call.parameters["id"]
-                if (id != null) {
-                    val collection = database.getCollection<MongoSensorRecord>("s_$id")
-                    call.respond(collection.find().toList().map { it.asData() })
-                } else {
-                    call.respond(HttpStatusCode.NotFound)
-                }
+                val from = call.request.queryParameters["from"]?.toInt() ?: 0
+                val to = call.request.queryParameters["to"]?.toInt() ?: (System.currentTimeMillis() / 1000).toInt()
+
+                call.respond(
+                    if (id != null) {
+                        database.getCollection<MongoSensorRecord>("s_$id")
+                            .find().toList().map { it.asData() }.filter { it.t in from..to }
+                    } else {
+                        HttpStatusCode.NotFound
+                    }
+                )
             }
 
             post("/") {
@@ -62,10 +68,10 @@ fun main() {
     }.start(wait = true)
 }
 
-fun getRandomStringSupplier(strLength: Int) : () -> String {
+fun getRandomStringSupplier(strLength: Int): () -> String {
     val random = SecureRandom()
     val bytes = ByteArray(strLength)
-    val charPool : List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
+    val charPool: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
     return {
         random.nextBytes(bytes)
         (bytes.indices).map { charPool[random.nextInt(charPool.size)] }.joinToString("")

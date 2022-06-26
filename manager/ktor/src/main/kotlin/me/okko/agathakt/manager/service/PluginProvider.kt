@@ -1,23 +1,23 @@
 package me.okko.agathakt.manager.service
 
-import me.okko.agathakt.manager.model.PluginEntryDto
-import me.okko.agathakt.manager.model.PluginFullDto
+import me.okko.agathakt.manager.model.PluginTypeEntryDto
+import me.okko.agathakt.manager.model.PluginTypeFullDto
 
 interface PluginProvider {
-    fun getAllByMediumIdOrNull(mediumId: Int): List<PluginEntryDto>?
-    fun getAll(): List<PluginEntryDto>
-    fun getByIdOrNull(id: Int): PluginFullDto?
+    fun getAllByMediumIdOrNull(mediumId: Int): List<PluginTypeEntryDto>?
+    fun getAll(): List<PluginTypeEntryDto>
+    fun getByIdOrNull(id: Int): PluginTypeFullDto?
 }
 
 class PluginProviderImpl : PluginProvider {
-    override fun getAllByMediumIdOrNull(mediumId: Int): List<PluginEntryDto>? {
+    override fun getAllByMediumIdOrNull(mediumId: Int): List<PluginTypeEntryDto>? {
         TODO("Not yet implemented")
     }
-    override fun getAll(): List<PluginEntryDto> {
+    override fun getAll(): List<PluginTypeEntryDto> {
         TODO("Not yet implemented")
     }
 
-    override fun getByIdOrNull(id: Int): PluginFullDto? {
+    override fun getByIdOrNull(id: Int): PluginTypeFullDto? {
         TODO("Not yet implemented")
     }
 }

@@ -1,9 +1,6 @@
 package me.okko.agathakt.manager.plugin.model.chart
 
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.JsonClassDiscriminator
-import me.okko.agathakt.manager.plugin.model.Output
 
 enum class ChartType {
     bar,

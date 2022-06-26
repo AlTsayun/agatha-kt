@@ -12,4 +12,4 @@ const getDeviceType = () => {
     }
     return "desktop";
 };
-send({ d:  getDeviceType()})
+send({ d: getDeviceType()})
